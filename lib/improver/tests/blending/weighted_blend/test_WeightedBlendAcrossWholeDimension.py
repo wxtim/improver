@@ -136,7 +136,7 @@ class Test_process(IrisTest):
                                               'longitude',
                                               units='degrees'), 3)
         cube_threshold.attributes.update({'relative_to_threshold': 'below'})
-        self.cube_threshold = cube_threshold
+        print "self.cube", self.cube
 
     def test_basic(self):
         """Test that the plugin returns an iris.cube.Cube."""
@@ -335,6 +335,24 @@ class Test_process(IrisTest):
         result = plugin.process(self.cube, weights)
         expected_result_array = np.ones((2, 2))*1.6
         self.assertArrayAlmostEqual(result.data, expected_result_array)
+        
+    def test_blend_across_frt(self):
+        """Test it works for weighted_max with weights [0.2, 0.8]
+           given as a array."""
+        coord = "forecast_reference_time"
+        plugin = WeightedBlendAcrossWholeDimension(coord, 'weighted_mean')
+        weights = None
+        time_origin = "hours since 1970-01-01 00:00:00"
+        calendar = "gregorian"
+        tunit = Unit(time_origin, calendar)
+        cube = self.cube
+        cube.remove_coord('time')
+        cube.add_dim_coord(DimCoord([402192., 402195.], long_name='forecast_reference_time', units=tunit), 0)
+        result = plugin.process(cube, weights)
+        
+        print result
+        #expected_result_array = np.ones((2, 2))*1.6
+        #self.assertArrayAlmostEqual(result.data, expected_result_array)
 
 
 if __name__ == '__main__':
